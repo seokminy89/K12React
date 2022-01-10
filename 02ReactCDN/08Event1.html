@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+    <script src="https://unpkg.com/react@17/umd/react.production.min.js"></script>
+    <script src="https://unpkg.com/react-dom@17/umd/react-dom.production.min.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6.15.0/babel.min.js"></script>
+</head>
+<body>
+    <h3>Event 핸들러 사용방법</h3>
+    <div id="myEvent1"></div>
+    <script type="text/babel">
+    
+    function myAlert(){
+        alert("click 이벤트가 발생되었습니다.");
+    }
+    const myElement = (
+        <div>
+            <button onClick={
+                function(){
+                    console.log("click이벤트가 발생됨.")
+                }
+            }>Click이벤트1 - console</button>
+            <button onClick={myAlert}>Click이벤트2 - myAlert()</button>
+        </div>
+    );
+    ReactDOM.render(<myElement />, document.getElementById('myEvent1'));
+    </script>
+
+    <h3>this 사용하기1-화살표함수</h3>
+    <div id="myEvent2"></div>
+    <script type="text/babel">
+    
+    class ThisComp1 extends React.Component{
+        thisFunc = () => {
+            alert("ThisComp1 나는 누구? "+ this);
+        }
+        render(){
+            return(
+                <button onClick={this.thisFunc}>this는 누구죠?</button>
+            );
+        }
+    }
+    ReactDOM.render(<ThisComp1 />, document.getElementById('myEvent2'));
+    </script>
+    
+    <h3>this 사용하기2-일반함수</h3>
+    <div id="myEvent3"></div>
+    <script type="text/babel">
+    
+    class ThisComp2 extends React.Component{
+        constructor(props){
+            super(props);
+            this.thisFunc = this.thisFunc.bind(this);
+        }
+        
+        thisFunc() {
+            alert("ThisComp2 나는 누구? "+ this);
+        }
+        render(){
+            return(
+                <button onClick={this.thisFunc}>this는 누구죠?</button>
+            );
+        }
+    }
+    ReactDOM.render(<ThisComp2 />, document.getElementById('myEvent3'));
+    </script>
+    
+</body>
+</html>
