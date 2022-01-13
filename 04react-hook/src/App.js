@@ -14,12 +14,38 @@ import './App.css';
 최상위 컴포넌트로 함수형으로 제작됨.
 */
 function App() {
+  /* 
+  useState() 사용시 전달된 true는 좌측항의 첫번째 인자로 전달된다.
+  즉 state의 초기값은 true인 것이다. funcShow=값, setFuncShow=값 변경을 위한 함수 이기때문.
+  */
+  var [funcShow, setFuncShow] = useState(true);
+  var [classShow, setclassShow] = useState(true);
+
   return (
     <div className="container">
       <h1>Class형 vs Function형 컴포넌트</h1>
+
+      {/* 
+      이벤트 리스너에 사용한 함수는 useState()의 두번째 반환값으로
+      state를 변경하는 역할을 한다. 즉 false로 변경한다.
+      false로 변경되면 아래 삼항연산자에 의해 컴포넌트에 null값이 입력되고
+      결국 컴포넌트가 삭제처리 된다.
+      */}
+      <input type="button" value="함수형컴포넌트삭제" onClick={
+        function(){
+          setFuncShow(false);
+        }
+      } />
+      <input type="button" value="클래스형컴포넌트삭제" onClick={
+        function(){
+          setclassShow(false);
+        }
+      } />
+
       {/* 부모에서 자식으로 데이터를 전달할때는 props를 사용한다. */}
-      <FuncComponent initNumber={2}></FuncComponent>
-      <ClassComponent initNumber={2}></ClassComponent>
+      {funcShow ? <FuncComponent initNumber={2}></FuncComponent> : null}
+      {classShow ? <ClassComponent initNumber={2}></ClassComponent> : null}
+      {/* 각 변수가 false가 되면 삼항연산자에 의해 컴포넌트는 숨김처리된다. */}
     </div>
   );
 }
@@ -40,14 +66,36 @@ class ClassComponent extends React.Component{
     number : this.props.initNumber,
     nowDate : (new Date()).toString()
   }
+  /* 
+  클래스형 컴포넌트에서는 2개이상의 state를 필요로하면 
+  컴마로 구분하여 추가하면 된다.
+  */
+
+
+  /*
+  render()가 호출되기 전에 호출되는 수명주기 함수이다.
+  getDerivedStateFromProps()라는 함수도 있는데, render가 호출되기 전에
+  전달된 props를 통해 state를 변경하는 역할을 한다.
+  또한 반드시 반환값이 있어야 한다.
+  */
   UNSAFE_componentWillMount(){
-    console.log("ClassComponent => componentWillMount() 호출됨");
+    /* 
+    해당 함수는 17버전 이상에서는 사용할때 UNSAFE_를 붙이지 않으면
+    경고메세지가 뜨게된다.
+    */
+    console.error("ClassComponent => componentWillMount() 호출됨");
   }
+  //render()가 호출된 후 자동 호출되는 수명주기 함수 (렌더링 직후 사용하고 싶을때 사용.)
   componentDidMount(){
-    console.log("ClassComponent => componentDidMount() 호출됨");
+    console.error("ClassComponent => componentDidMount() 호출됨");
   }
+  /*
+  최초 렌더링시에는  호출되지 않고, state 값의 변경에 의해 재렌더링이 될때
+  호출된다. 해당 함수에서 true가 호출될때만 render()가 호출된다.
+  만약 false를 반환하면 화면이 갱신되지 않는다.
+  */
   shouldComponentUpdate(){
-    console.log("ClassComponent => shouldComponentUpdate() 호출됨");
+    console.error("ClassComponent => shouldComponentUpdate() 호출됨");
     let rNum = Math.round(this.state.number*100) % 2;
     if(rNum===0){
       return true;
@@ -59,6 +107,7 @@ class ClassComponent extends React.Component{
   }
 
   render(){
+    console.error("ClassComponent => render() 호출됨");
     return(
       <div className="container">
         <h2>Class형 컴포넌트</h2>
@@ -92,27 +141,42 @@ class ClassComponent extends React.Component{
   없으므로 render()함수가 별도로 존재하지 않고, 자기 자신이 render() 역할을 한다.
 */
 function FuncComponent(props){
-  console.log("#Life#","FuncConponent==>함수실행");
+  /**
+  함수형 컴포넌트에서는 return이 render()의 역할을 하므로 특정함수를
+  호출하거나 해서 렌더링 전 전처리를 할 수 있다.
+   */
+  console.log("#Life1#","FuncConponent==>함수실행");
   /*
   useState()로 얻어온 값을 출력하면 크기가 2인 배열로 출력된다.
   0번째 요소는 인자로 전달한 값(상태값)이고
   1번째 요소는 state값을 변경할 수 있는 함수가 된다.
   */
   var numberState = useState(props.initNumber);
-  console.log("numberState", numberState);
+  //console.log("numberState", numberState);
   var number = numberState[0];//state값
   var setNumber = numberState[1];//state를 변경할 수 있는 함수
 
-  var dateState = useState((new Date().toString()));
-  var nowDate = dateState[0];
-  var setDate = dateState[1];
-  //var [nowDate, setDate] = useState((new Date()).toString());
+  /*
+  함수형 컴포넌트에서는 state가 추가될때마다 Hook을 통해 추가해야 한다.
+  */
+  // var dateState = useState((new Date().toString()));
+  // var nowDate = dateState[0];
+  // var setDate = dateState[1];
+  // ==> 반환값이 배열이므로 위 코드를 아래와 같이 변경할 수 있다.
+  var [nowDate, setDate] = useState((new Date()).toString());
 
+  /*
+  해당 컴포넌트가 렌더링 된 후 자동으로 호출된다. 
+  해당 함수는 첫번째 인자로 반드시 함수가 와야 한다.
+  클래스형 컴포넌트는 마운팅단계와 업데이트 단계에서 사용하는
+  별도의수명주기 함수가 있지만, 함수형 컴포넌트에는 별도로 존재하지 않는다.
+  */
   useEffect(function(){
-    console.log("#Life#","FuncConponent==>useEffect");
+    console.log("#Life3#","FuncConponent==>useEffect");
   });
 
-  console.log("#Life#","FuncConponent==>return실행(render와동일)");
+  //함수형 컴포넌트는 return이 될 때 렌더링 된다.
+  console.log("#Life2#","FuncConponent==>return실행(render와동일)");
   return(
       <div className="container">
         <h2>function형 컴포넌트</h2>
@@ -126,6 +190,10 @@ function FuncComponent(props){
         <input type="button" value="난수생성" onClick={function(){
           setNumber(Math.random());
         }} />
+        {/* 
+        함수형 컴포넌트에서는 state 값을 변경하기 위해 this를 사용할 필요가
+        없으므로, 어떤 형식의 함수를 사용해도 별도의 바인딩(bind())이 필요없다.
+        */}
         <input type="button" value="현재날짜" onClick={function(){
           setDate((new Date()).toString());
         }} />
